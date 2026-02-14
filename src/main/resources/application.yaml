@@ -1,0 +1,42 @@
+# SpringDoc / OpenAPI - limit scan to controller packages to avoid 500 (e.g. JPA entities)
+springdoc:
+  packages-to-scan:
+    - com.kpabk.kpabk_connect.auth.controller
+    - com.kpabk.kpabk_connect.user.controller
+    - com.kpabk.kpabk_connect.product.controller
+    - com.kpabk.kpabk_connect.order.controller
+    - com.kpabk.kpabk_connect.payment.controller
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+auth:
+  jwt:
+    secret: "kpabk-connect-dev-secret-min-32-chars-for-hs256"
+    expiration-seconds: 86400
+    issuer: kpabk-connect
+
+spring:
+  application:
+    name: kpabk-connect
+  datasource:
+    url: jdbc:h2:mem:kpabkdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+# Payment (Razorpay). Set env PAYMENT_RAZORPAY_KEY_ID, PAYMENT_RAZORPAY_KEY_SECRET to enable; leave unset to use no-op gateway (app starts without Razorpay).
+payment:
+  razorpay:
+    key-id: ${PAYMENT_RAZORPAY_KEY_ID:}
+    key-secret: ${PAYMENT_RAZORPAY_KEY_SECRET:}
+    webhook-secret: ${PAYMENT_RAZORPAY_WEBHOOK_SECRET:}
