@@ -6,6 +6,7 @@ springdoc:
     - com.kpabk.kpabk_connect.product.controller
     - com.kpabk.kpabk_connect.order.controller
     - com.kpabk.kpabk_connect.payment.controller
+    - com.kpabk.kpabk_connect.cart.controller
   api-docs:
     path: /v3/api-docs
   swagger-ui:

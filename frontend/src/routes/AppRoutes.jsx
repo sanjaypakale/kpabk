@@ -10,8 +10,12 @@ import {
   OutletProductsPage,
 } from '../features/outlet';
 import { UserListPage, CreateUserPage, UserDetailsPage, EditUserPage } from '../features/user';
-import { ProductsPage } from '../features/product';
+import { ProductListPage } from '../features/product';
 import DashboardPage from '../pages/DashboardPage';
+import CartPage from '../features/cart/pages/CartPage';
+import OrdersPage from '../pages/OrdersPage';
+import OrderSuccessPage from '../pages/OrderSuccessPage';
+import PaymentsPage from '../pages/PaymentsPage';
 
 /**
  * Application route configuration. Protected routes require authentication.
@@ -27,7 +31,11 @@ export function AppRoutes() {
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/products" element={<ProductsPage />} />
+          <Route path="/products" element={<ProductListPage />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/order-success" element={<OrderSuccessPage />} />
+          <Route path="/orders" element={<OrdersPage />} />
+          <Route path="/payments" element={<PaymentsPage />} />
           <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
             <Route path="/admin/outlets" element={<OutletListPage />} />
             <Route path="/admin/outlets/new" element={<CreateOutletPage />} />
@@ -38,7 +46,6 @@ export function AppRoutes() {
             <Route path="/admin/users/new" element={<CreateUserPage />} />
             <Route path="/admin/users/:id" element={<UserDetailsPage />} />
             <Route path="/admin/users/:id/edit" element={<EditUserPage />} />
-            <Route path="/admin/products" element={<ProductsPage />} />
           </Route>
         </Route>
       </Route>

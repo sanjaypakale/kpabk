@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link as RouterLink, NavLink, useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
@@ -6,6 +6,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Box from '@mui/material/Box';
+import Badge from '@mui/material/Badge';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
@@ -25,6 +26,7 @@ import Person from '@mui/icons-material/Person';
 import People from '@mui/icons-material/People';
 import Logout from '@mui/icons-material/Logout';
 import { logoutUser } from '../features/auth/authSlice';
+import { fetchCart, clearCart, selectCartTotalQuantity } from '../features/cart';
 import { getDisplayName, getInitials } from '../utils/authUtils';
 
 const navLinkSx = {
@@ -38,23 +40,19 @@ const navLinkSx = {
   },
 };
 
-const adminNavItems = [
-  { label: 'Dashboard', to: '/dashboard', icon: Dashboard },
-  { label: 'Outlets', to: '/admin/outlets', icon: Storefront },
-  { label: 'Users', to: '/admin/users', icon: People },
-  { label: 'Products', to: '/admin/products', icon: Inventory },
-  { label: 'Orders', to: '/admin/orders', icon: ShoppingCart },
-  { label: 'Payments', to: '/admin/payments', icon: Payment },
-];
-
-const outletNavItems = [
+/** Common to all roles: Dashboard, Products, Orders, Payments */
+const commonNavItems = [
   { label: 'Dashboard', to: '/dashboard', icon: Dashboard },
   { label: 'Products', to: '/products', icon: Inventory },
   { label: 'Orders', to: '/orders', icon: ShoppingCart },
   { label: 'Payments', to: '/payments', icon: Payment },
 ];
 
-const PRODUCTS_PATHS = ['/admin/products', '/products'];
+/** Admin only: Outlets, Users */
+const adminOnlyNavItems = [
+  { label: 'Outlets', to: '/admin/outlets', icon: Storefront },
+  { label: 'Users', to: '/admin/users', icon: People },
+];
 
 /**
  * Shared layout with top AppBar (logo, nav links, profile menu). Renders <Outlet /> for page content.
@@ -70,17 +68,19 @@ export function DashboardLayout() {
   const { user } = useSelector((state) => state.auth);
   const role = typeof user?.role === 'string' ? user?.role : user?.role;
   const isAdmin = role?.toUpperCase() === 'ADMIN';
-  const navItems = isAdmin ? adminNavItems : outletNavItems;
+  const navItems = isAdmin ? [...commonNavItems, ...adminOnlyNavItems] : commonNavItems;
 
   const displayName = getDisplayName(user);
   const initials = getInitials(displayName);
 
-  const isProductsPage = PRODUCTS_PATHS.some(
-    (path) => location.pathname === path || location.pathname.startsWith(`${path}/`)
-  );
+  const cartCount = useSelector(selectCartTotalQuantity);
 
   const [profileAnchor, setProfileAnchor] = useState(null);
   const [mobileNavAnchor, setMobileNavAnchor] = useState(null);
+
+  useEffect(() => {
+    if (user) dispatch(fetchCart());
+  }, [user, dispatch]);
 
   const handleProfileOpen = (e) => setProfileAnchor(e.currentTarget);
   const handleProfileClose = () => setProfileAnchor(null);
@@ -89,6 +89,7 @@ export function DashboardLayout() {
 
   const handleLogout = () => {
     handleProfileClose();
+    dispatch(clearCart());
     dispatch(logoutUser());
     navigate('/login', { replace: true });
   };
@@ -103,7 +104,7 @@ export function DashboardLayout() {
   };
 
   const handleCartClick = () => {
-    navigate(isAdmin ? '/admin/cart' : '/cart');
+    navigate('/cart');
   };
 
   return (
@@ -175,14 +176,31 @@ export function DashboardLayout() {
           )}
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, ml: 'auto' }}>
-            {isProductsPage && (
-              <Tooltip title="Cart" arrow placement="bottom">
+            <Tooltip title="Cart" arrow placement="bottom">
+              <Badge
+                badgeContent={cartCount}
+                color="secondary"
+                max={999}
+                sx={{
+                  '& .MuiBadge-badge': {
+                    fontWeight: 700,
+                    fontSize: '0.75rem',
+                    minWidth: 20,
+                    height: 20,
+                    lineHeight: 1,
+                    padding: '0 6px',
+                    border: '2px solid',
+                    borderColor: 'yellow',
+                    boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+                  },
+                }}
+              >
                 <Button
                   variant="outlined"
                   size="small"
                   startIcon={<ShoppingCartOutlined sx={{ fontSize: '1.2rem' }} />}
                   onClick={handleCartClick}
-                  aria-label="Open cart"
+                  aria-label={cartCount ? `Cart (${cartCount} items)` : 'Open cart'}
                   sx={{
                     minWidth: { xs: 40, sm: 'auto' },
                     px: { xs: 1, sm: 1.5 },
@@ -205,8 +223,8 @@ export function DashboardLayout() {
                     Cart
                   </Typography>
                 </Button>
-              </Tooltip>
-            )}
+              </Badge>
+            </Tooltip>
             <Box component="span" sx={{ width: { xs: 12, sm: 24 } }} aria-hidden />
             <Typography variant="body2" sx={{ display: { xs: 'none', sm: 'block' }, fontWeight: 500 }}>
               {displayName}

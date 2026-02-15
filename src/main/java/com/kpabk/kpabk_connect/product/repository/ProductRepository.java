@@ -14,4 +14,6 @@ import java.util.UUID;
 public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpecificationExecutor<Product> {
 
     long countByCategory_Id(UUID categoryId);
+
+    boolean existsByName(String name);
 }

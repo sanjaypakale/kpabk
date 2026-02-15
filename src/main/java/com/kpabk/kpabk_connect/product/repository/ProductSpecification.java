@@ -27,7 +27,21 @@ public final class ProductSpecification {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (name != null && !name.isBlank()) {
-                predicates.add(cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%"));
+                String term = name.trim().toUpperCase();
+                String pattern = "%" + name.trim().toLowerCase() + "%";
+                List<Predicate> searchPredicates = new ArrayList<>();
+                searchPredicates.add(cb.like(cb.lower(root.get("name")), pattern));
+                searchPredicates.add(cb.and(
+                    cb.isNotNull(root.get("description")),
+                    cb.like(cb.lower(root.get("description")), pattern)
+                ));
+                try {
+                    ProductUnit searchUnit = ProductUnit.valueOf(term);
+                    searchPredicates.add(cb.equal(root.get("unit"), searchUnit));
+                } catch (IllegalArgumentException ignored) {
+                    // term is not a valid ProductUnit
+                }
+                predicates.add(cb.or(searchPredicates.toArray(new Predicate[0])));
             }
             if (categoryId != null) {
                 predicates.add(cb.equal(root.get("category").get("id"), categoryId));
