@@ -1,6 +1,7 @@
 package com.kpabk.kpabk_connect.product.dto;
 
 import com.kpabk.kpabk_connect.product.model.ProductType;
+import com.kpabk.kpabk_connect.product.model.ProductUnit;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,6 +26,7 @@ public class OutletProductResponse {
     private String productName;
     private String description;
     private ProductType productType;
+    private ProductUnit unit;
     private BigDecimal basePrice;
     private BigDecimal outletPrice;  // null means use basePrice
     private String imageUrl;

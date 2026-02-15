@@ -23,7 +23,7 @@ public class JwtUtil {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(String subject, String email, String roleName, Long outletId) {
+    public String generateToken(String subject, String email, String roleName, Long outletId, String displayName) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + properties.getExpirationSeconds() * 1000);
         return Jwts.builder()
@@ -31,6 +31,7 @@ public class JwtUtil {
                 .claim("email", email)
                 .claim("role", roleName)
                 .claim("outletId", outletId)
+                .claim("displayName", displayName != null ? displayName : "")
                 .setIssuer(properties.getIssuer())
                 .setIssuedAt(now)
                 .setExpiration(expiry)
@@ -50,7 +51,8 @@ public class JwtUtil {
             String role = claims.get("role", String.class);
             Number outletIdNum = claims.get("outletId", Number.class);
             Long outletId = outletIdNum != null ? outletIdNum.longValue() : null;
-            return new JwtClaims(subject, email, role, outletId);
+            String displayName = claims.get("displayName", String.class);
+            return new JwtClaims(subject, email, role, outletId, displayName);
         } catch (JwtException e) {
             return null;
         }
@@ -60,5 +62,5 @@ public class JwtUtil {
         return properties.getExpirationSeconds();
     }
 
-    public record JwtClaims(String subject, String email, String role, Long outletId) {}
+    public record JwtClaims(String subject, String email, String role, Long outletId, String displayName) {}
 }

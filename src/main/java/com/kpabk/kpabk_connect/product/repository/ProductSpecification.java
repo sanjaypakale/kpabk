@@ -2,6 +2,7 @@ package com.kpabk.kpabk_connect.product.repository;
 
 import com.kpabk.kpabk_connect.product.model.Product;
 import com.kpabk.kpabk_connect.product.model.ProductType;
+import com.kpabk.kpabk_connect.product.model.ProductUnit;
 import org.springframework.data.jpa.domain.Specification;
 
 import jakarta.persistence.criteria.Predicate;
@@ -18,6 +19,7 @@ public final class ProductSpecification {
             String name,
             UUID categoryId,
             ProductType productType,
+            ProductUnit unit,
             BigDecimal minPrice,
             BigDecimal maxPrice,
             Boolean isActive
@@ -32,6 +34,9 @@ public final class ProductSpecification {
             }
             if (productType != null) {
                 predicates.add(cb.equal(root.get("productType"), productType));
+            }
+            if (unit != null) {
+                predicates.add(cb.equal(root.get("unit"), unit));
             }
             if (minPrice != null) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("basePrice"), minPrice));

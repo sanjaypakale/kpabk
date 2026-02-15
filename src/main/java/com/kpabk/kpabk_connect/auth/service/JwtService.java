@@ -13,11 +13,13 @@ public class JwtService {
     private final JwtUtil jwtUtil;
 
     public LoginResponse buildLoginResponse(User user) {
+        String displayName = user.getDisplayName() != null ? user.getDisplayName() : "";
         String token = jwtUtil.generateToken(
                 String.valueOf(user.getId()),
                 user.getEmail(),
                 user.getRole().getName().name(),
-                user.getOutletId()
+                user.getOutletId(),
+                displayName
         );
         return LoginResponse.builder()
                 .accessToken(token)
@@ -26,6 +28,7 @@ public class JwtService {
                 .email(user.getEmail())
                 .role(user.getRole().getName())
                 .outletId(user.getOutletId())
+                .displayName(displayName.isEmpty() ? null : displayName)
                 .build();
     }
 }

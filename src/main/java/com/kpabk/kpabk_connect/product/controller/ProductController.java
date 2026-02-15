@@ -2,6 +2,7 @@ package com.kpabk.kpabk_connect.product.controller;
 
 import com.kpabk.kpabk_connect.product.dto.*;
 import com.kpabk.kpabk_connect.product.model.ProductType;
+import com.kpabk.kpabk_connect.product.model.ProductUnit;
 import com.kpabk.kpabk_connect.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +45,7 @@ public class ProductController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) UUID categoryId,
             @RequestParam(required = false) ProductType productType,
+            @RequestParam(required = false) ProductUnit unit,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) Boolean isActive
@@ -56,6 +58,7 @@ public class ProductController {
                 .name(name)
                 .categoryId(categoryId)
                 .productType(productType)
+                .unit(unit)
                 .minPrice(minPrice)
                 .maxPrice(maxPrice)
                 .isActive(isActive)

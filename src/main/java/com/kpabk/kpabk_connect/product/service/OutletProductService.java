@@ -83,6 +83,7 @@ public class OutletProductService {
                 .productName(p.getName())
                 .description(p.getDescription())
                 .productType(p.getProductType())
+                .unit(p.getUnit())
                 .basePrice(p.getBasePrice())
                 .outletPrice(op.getOutletPrice())
                 .imageUrl(p.getImageUrl())

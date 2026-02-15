@@ -1,6 +1,7 @@
 package com.kpabk.kpabk_connect.product.dto;
 
 import com.kpabk.kpabk_connect.product.model.ProductType;
+import com.kpabk.kpabk_connect.product.model.ProductUnit;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -32,6 +33,9 @@ public class ProductRequest {
 
     @NotNull(message = "Product type is required")
     private ProductType productType;
+
+    @NotNull(message = "Unit is required (e.g. PAC, KGS, SET, PCS)")
+    private ProductUnit unit;
 
     @NotNull(message = "Category is required")
     private UUID categoryId;

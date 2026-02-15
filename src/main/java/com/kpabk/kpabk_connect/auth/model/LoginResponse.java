@@ -17,4 +17,5 @@ public class LoginResponse {
     private String email;
     private RoleName role;
     private Long outletId;
+    private String displayName;
 }

@@ -1,6 +1,7 @@
 package com.kpabk.kpabk_connect.product.dto;
 
 import com.kpabk.kpabk_connect.product.model.ProductType;
+import com.kpabk.kpabk_connect.product.model.ProductUnit;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,6 +22,7 @@ public class ProductResponse {
     private String description;
     private BigDecimal basePrice;
     private ProductType productType;
+    private ProductUnit unit;
     private UUID categoryId;
     private String categoryName;
     private String imageUrl;

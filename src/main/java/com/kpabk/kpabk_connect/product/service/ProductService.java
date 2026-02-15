@@ -47,6 +47,7 @@ public class ProductService {
                 criteria.getName(),
                 criteria.getCategoryId(),
                 criteria.getProductType(),
+                criteria.getUnit(),
                 criteria.getMinPrice(),
                 criteria.getMaxPrice(),
                 criteria.getIsActive()
@@ -96,6 +97,7 @@ public class ProductService {
         product.setDescription(trimToNull(request.getDescription()));
         product.setBasePrice(request.getBasePrice());
         product.setProductType(request.getProductType());
+        product.setUnit(request.getUnit());
         product.setCategory(category);
         product.setImageUrl(trimToNull(request.getImageUrl()));
         product.setIsActive(request.getIsActive() != null ? request.getIsActive() : true);
@@ -109,6 +111,7 @@ public class ProductService {
                 .description(product.getDescription())
                 .basePrice(product.getBasePrice())
                 .productType(product.getProductType())
+                .unit(product.getUnit())
                 .categoryId(product.getCategory().getId())
                 .categoryName(product.getCategory().getName())
                 .imageUrl(product.getImageUrl())
