@@ -1,9 +1,13 @@
 /**
- * Prefer displayName/name; if missing, derive a friendly name from email (e.g. admin@test.com → Admin).
+ * Prefer displayName; else firstName + lastName; else name; else derive from email (e.g. admin@test.com → Admin).
  */
 export function getDisplayName(user) {
-  const name = user?.displayName || user?.name;
-  if (name && typeof name === 'string' && name.trim()) return name.trim();
+  const displayName = user?.displayName || user?.name;
+  if (displayName && typeof displayName === 'string' && displayName.trim()) return displayName.trim();
+  const first = user?.firstName?.trim() ?? '';
+  const last = user?.lastName?.trim() ?? '';
+  const combined = (first + ' ' + last).trim();
+  if (combined) return combined;
   const email = user?.email;
   if (email && typeof email === 'string') {
     const local = email.split('@')[0];

@@ -19,5 +19,5 @@ public interface SsoAuthenticationHook {
     /**
      * Resolve or create user from SSO subject. Return empty if not linked.
      */
-    Optional<User> resolveOrCreateUser(String subjectId, String email, String displayName);
+    Optional<User> resolveOrCreateUser(String subjectId, String email, String firstName, String lastName);
 }

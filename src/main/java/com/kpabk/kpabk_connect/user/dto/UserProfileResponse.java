@@ -19,7 +19,9 @@ public class UserProfileResponse {
 
     private Long id;
     private String email;
-    private String displayName;
+    private String firstName;
+    private String lastName;
+    private String displayName;  // computed: firstName + " " + lastName
     private String phone;
     private RoleName role;
     private Long outletId;

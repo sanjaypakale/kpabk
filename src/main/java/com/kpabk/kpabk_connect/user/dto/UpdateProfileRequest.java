@@ -13,7 +13,10 @@ import lombok.NoArgsConstructor;
 public class UpdateProfileRequest {
 
     @Size(max = 100)
-    private String displayName;
+    private String firstName;
+
+    @Size(max = 100)
+    private String lastName;
 
     @Size(max = 20)
     private String phone;

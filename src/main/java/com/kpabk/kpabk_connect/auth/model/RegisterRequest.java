@@ -22,7 +22,10 @@ public class RegisterRequest {
     private String password;
 
     @Size(max = 100)
-    private String displayName;
+    private String firstName;
+
+    @Size(max = 100)
+    private String lastName;
 
     @NotNull(message = "Role is required")
     private RoleName role;

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link as RouterLink, NavLink, useNavigate, Outlet } from 'react-router-dom';
+import { Link as RouterLink, NavLink, useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import AppBar from '@mui/material/AppBar';
@@ -8,6 +8,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import Avatar from '@mui/material/Avatar';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -18,8 +19,10 @@ import Dashboard from '@mui/icons-material/Dashboard';
 import Storefront from '@mui/icons-material/Storefront';
 import Inventory from '@mui/icons-material/Inventory';
 import ShoppingCart from '@mui/icons-material/ShoppingCart';
+import ShoppingCartOutlined from '@mui/icons-material/ShoppingCartOutlined';
 import Payment from '@mui/icons-material/Payment';
 import Person from '@mui/icons-material/Person';
+import People from '@mui/icons-material/People';
 import Logout from '@mui/icons-material/Logout';
 import { logoutUser } from '../features/auth/authSlice';
 import { getDisplayName, getInitials } from '../utils/authUtils';
@@ -38,6 +41,7 @@ const navLinkSx = {
 const adminNavItems = [
   { label: 'Dashboard', to: '/dashboard', icon: Dashboard },
   { label: 'Outlets', to: '/admin/outlets', icon: Storefront },
+  { label: 'Users', to: '/admin/users', icon: People },
   { label: 'Products', to: '/admin/products', icon: Inventory },
   { label: 'Orders', to: '/admin/orders', icon: ShoppingCart },
   { label: 'Payments', to: '/admin/payments', icon: Payment },
@@ -50,6 +54,8 @@ const outletNavItems = [
   { label: 'Payments', to: '/payments', icon: Payment },
 ];
 
+const PRODUCTS_PATHS = ['/admin/products', '/products'];
+
 /**
  * Shared layout with top AppBar (logo, nav links, profile menu). Renders <Outlet /> for page content.
  * Used for /dashboard and /admin/* routes.
@@ -57,6 +63,7 @@ const outletNavItems = [
 export function DashboardLayout() {
   const theme = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -67,6 +74,10 @@ export function DashboardLayout() {
 
   const displayName = getDisplayName(user);
   const initials = getInitials(displayName);
+
+  const isProductsPage = PRODUCTS_PATHS.some(
+    (path) => location.pathname === path || location.pathname.startsWith(`${path}/`)
+  );
 
   const [profileAnchor, setProfileAnchor] = useState(null);
   const [mobileNavAnchor, setMobileNavAnchor] = useState(null);
@@ -89,6 +100,10 @@ export function DashboardLayout() {
   const handleMobileNavClick = (to) => {
     navigate(to);
     handleMobileNavClose();
+  };
+
+  const handleCartClick = () => {
+    navigate(isAdmin ? '/admin/cart' : '/cart');
   };
 
   return (
@@ -160,6 +175,39 @@ export function DashboardLayout() {
           )}
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, ml: 'auto' }}>
+            {isProductsPage && (
+              <Tooltip title="Cart" arrow placement="bottom">
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<ShoppingCartOutlined sx={{ fontSize: '1.2rem' }} />}
+                  onClick={handleCartClick}
+                  aria-label="Open cart"
+                  sx={{
+                    minWidth: { xs: 40, sm: 'auto' },
+                    px: { xs: 1, sm: 1.5 },
+                    py: 0.75,
+                    borderColor: 'primary.contrastText',
+                    color: 'primary.contrastText',
+                    '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.75 } },
+                    '&:hover': {
+                      borderColor: 'primary.contrastText',
+                      bgcolor: 'rgba(255, 255, 255, 0.08)',
+                    },
+                  }}
+                >
+                  <Typography
+                    component="span"
+                    variant="body2"
+                    fontWeight={600}
+                    sx={{ display: { xs: 'none', sm: 'inline' } }}
+                  >
+                    Cart
+                  </Typography>
+                </Button>
+              </Tooltip>
+            )}
+            <Box component="span" sx={{ width: { xs: 12, sm: 24 } }} aria-hidden />
             <Typography variant="body2" sx={{ display: { xs: 'none', sm: 'block' }, fontWeight: 500 }}>
               {displayName}
             </Typography>

@@ -16,12 +16,19 @@ import CircularProgress from '@mui/material/CircularProgress';
 import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Snackbar from '@mui/material/Snackbar';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { loginUser, clearError } from './authSlice';
+import * as authService from './authService';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 6;
+const MIN_REGISTER_PASSWORD_LENGTH = 8;
 
 function validateEmail(email) {
   if (!email?.trim()) return 'Email is required';
@@ -37,6 +44,45 @@ function validatePassword(password) {
   return null;
 }
 
+function validateRegisterPassword(password) {
+  if (!password) return 'Password is required';
+  if (password.length < MIN_REGISTER_PASSWORD_LENGTH) {
+    return `Password must be at least ${MIN_REGISTER_PASSWORD_LENGTH} characters`;
+  }
+  return null;
+}
+
+const initialRegisterForm = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
+};
+
+function getRegisterErrors(values, touched) {
+  const err = {};
+  if (touched.firstName) {
+    if (!values.firstName?.trim()) err.firstName = 'First name is required';
+  }
+  if (touched.lastName) {
+    if (!values.lastName?.trim()) err.lastName = 'Last name is required';
+  }
+  if (touched.email) {
+    const e = validateEmail(values.email);
+    if (e) err.email = e;
+  }
+  if (touched.password) {
+    const p = validateRegisterPassword(values.password);
+    if (p) err.password = p;
+  }
+  if (touched.confirmPassword) {
+    if (!values.confirmPassword) err.confirmPassword = 'Confirm password is required';
+    else if (values.password !== values.confirmPassword) err.confirmPassword = 'Passwords do not match';
+  }
+  return err;
+}
+
 export function LoginPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -47,6 +93,28 @@ export function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [touched, setTouched] = useState({ email: false, password: false });
+
+  const [registerDialogOpen, setRegisterDialogOpen] = useState(false);
+  const [registerForm, setRegisterForm] = useState(initialRegisterForm);
+  const [registerTouched, setRegisterTouched] = useState({
+    firstName: false,
+    lastName: false,
+    email: false,
+    password: false,
+    confirmPassword: false,
+  });
+  const [registerLoading, setRegisterLoading] = useState(false);
+  const [registerError, setRegisterError] = useState(null);
+  const [registerSuccessSnack, setRegisterSuccessSnack] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+
+  const registerErrors = getRegisterErrors(registerForm, registerTouched);
+  const registerValid =
+    registerForm.firstName?.trim() &&
+    registerForm.lastName?.trim() &&
+    !validateEmail(registerForm.email) &&
+    !validateRegisterPassword(registerForm.password) &&
+    registerForm.password === registerForm.confirmPassword;
 
   const emailError = touched.email ? validateEmail(email) : null;
   const passwordError = touched.password ? validatePassword(password) : null;
@@ -67,6 +135,61 @@ export function LoginPage() {
     dispatch(loginUser({ email: email.trim(), password })).then((result) => {
       if (loginUser.fulfilled.match(result)) navigate('/dashboard', { replace: true });
     });
+  };
+
+  const openRegisterDialog = () => {
+    setRegisterDialogOpen(true);
+    setRegisterForm(initialRegisterForm);
+    setRegisterTouched({
+      firstName: false,
+      lastName: false,
+      email: false,
+      password: false,
+      confirmPassword: false,
+    });
+    setRegisterError(null);
+  };
+
+  const closeRegisterDialog = () => {
+    if (!registerLoading) setRegisterDialogOpen(false);
+  };
+
+  const setRegisterField = (field) => (e) => {
+    setRegisterForm((prev) => ({ ...prev, [field]: e.target.value }));
+    setRegisterError(null);
+  };
+
+  const setRegisterBlur = (field) => () => {
+    setRegisterTouched((prev) => ({ ...prev, [field]: true }));
+  };
+
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    const allTouched = {
+      firstName: true,
+      lastName: true,
+      email: true,
+      password: true,
+      confirmPassword: true,
+    };
+    setRegisterTouched(allTouched);
+    if (!registerValid) return;
+    setRegisterLoading(true);
+    setRegisterError(null);
+    try {
+      await authService.register({
+        firstName: registerForm.firstName.trim(),
+        lastName: registerForm.lastName.trim(),
+        email: registerForm.email.trim(),
+        password: registerForm.password,
+      });
+      setRegisterDialogOpen(false);
+      setRegisterSuccessSnack(true);
+    } catch (err) {
+      setRegisterError(err.response?.data?.error || err.message || 'Registration failed');
+    } finally {
+      setRegisterLoading(false);
+    }
   };
 
   return (
@@ -173,12 +296,132 @@ export function LoginPage() {
                   >
                     {loading ? 'Signing in…' : 'Sign in'}
                   </Button>
+
+                  <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', pt: 1 }}>
+                    Don&apos;t have an account?{' '}
+                    <Link
+                      component="button"
+                      type="button"
+                      variant="body2"
+                      onClick={openRegisterDialog}
+                      sx={{ cursor: 'pointer' }}
+                    >
+                      Register
+                    </Link>
+                  </Typography>
                 </Stack>
               </form>
             </Stack>
           </CardContent>
         </Card>
       </Container>
+
+      <Dialog open={registerDialogOpen} onClose={closeRegisterDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>Create account</DialogTitle>
+        <form onSubmit={handleRegisterSubmit} noValidate>
+          <DialogContent>
+            <Stack spacing={2} sx={{ pt: 0 }}>
+              {registerError && (
+                <Alert severity="error" onClose={() => setRegisterError(null)}>
+                  {registerError}
+                </Alert>
+              )}
+              <TextField
+                label="First name"
+                value={registerForm.firstName}
+                onChange={setRegisterField('firstName')}
+                onBlur={setRegisterBlur('firstName')}
+                error={!!registerErrors.firstName}
+                helperText={registerErrors.firstName}
+                autoComplete="given-name"
+                required
+                fullWidth
+              />
+              <TextField
+                label="Last name"
+                value={registerForm.lastName}
+                onChange={setRegisterField('lastName')}
+                onBlur={setRegisterBlur('lastName')}
+                error={!!registerErrors.lastName}
+                helperText={registerErrors.lastName}
+                autoComplete="family-name"
+                required
+                fullWidth
+              />
+              <TextField
+                label="Email"
+                type="email"
+                value={registerForm.email}
+                onChange={setRegisterField('email')}
+                onBlur={setRegisterBlur('email')}
+                error={!!registerErrors.email}
+                helperText={registerErrors.email}
+                autoComplete="email"
+                required
+                fullWidth
+              />
+              <TextField
+                label="Password"
+                type={showRegisterPassword ? 'text' : 'password'}
+                value={registerForm.password}
+                onChange={setRegisterField('password')}
+                onBlur={setRegisterBlur('password')}
+                error={!!registerErrors.password}
+                helperText={registerErrors.password || `At least ${MIN_REGISTER_PASSWORD_LENGTH} characters`}
+                autoComplete="new-password"
+                required
+                fullWidth
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() => setShowRegisterPassword((s) => !s)}
+                        edge="end"
+                      >
+                        {showRegisterPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              <TextField
+                label="Confirm password"
+                type={showRegisterPassword ? 'text' : 'password'}
+                value={registerForm.confirmPassword}
+                onChange={setRegisterField('confirmPassword')}
+                onBlur={setRegisterBlur('confirmPassword')}
+                error={!!registerErrors.confirmPassword}
+                helperText={registerErrors.confirmPassword}
+                autoComplete="new-password"
+                required
+                fullWidth
+              />
+            </Stack>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button onClick={closeRegisterDialog} disabled={registerLoading}>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={!registerValid || registerLoading}
+              startIcon={registerLoading ? <CircularProgress size={20} color="inherit" /> : null}
+            >
+              {registerLoading ? 'Registering…' : 'Register'}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+
+      <Snackbar
+        open={registerSuccessSnack}
+        autoHideDuration={6000}
+        onClose={() => setRegisterSuccessSnack(false)}
+        message="Registration successful. You can sign in now."
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      />
     </Box>
   );
 }

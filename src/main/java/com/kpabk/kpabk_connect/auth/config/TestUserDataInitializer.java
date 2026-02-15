@@ -29,19 +29,20 @@ public class TestUserDataInitializer {
         return args -> {
             String testPassword = passwordEncoder.encode("password123");
 
-            createIfMissing("admin@test.com", testPassword, "Admin User", RoleName.ADMIN, null);
-            createIfMissing("outlet@test.com", testPassword, "Outlet Manager", RoleName.OUTLET, 1L);
-            createIfMissing("customer@test.com", testPassword, "Test Customer", RoleName.CUSTOMER, null);
+            createIfMissing("admin@test.com", testPassword, "Admin", "User", RoleName.ADMIN, null);
+            createIfMissing("outlet@test.com", testPassword, "Outlet", "Manager", RoleName.OUTLET, 1L);
+            createIfMissing("customer@test.com", testPassword, "Test", "Customer", RoleName.CUSTOMER, null);
         };
     }
 
-    private void createIfMissing(String email, String passwordHash, String displayName, RoleName roleName, Long outletId) {
+    private void createIfMissing(String email, String passwordHash, String firstName, String lastName, RoleName roleName, Long outletId) {
         if (userRepository.findByEmail(email).isEmpty()) {
             roleRepository.findByName(roleName).ifPresent(role ->
                     userRepository.save(User.builder()
                             .email(email)
                             .passwordHash(passwordHash)
-                            .displayName(displayName)
+                            .firstName(firstName)
+                            .lastName(lastName)
                             .role(role)
                             .outletId(outletId)
                             .enabled(true)

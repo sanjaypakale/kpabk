@@ -28,6 +28,8 @@ public class JwtService {
                 .email(user.getEmail())
                 .role(user.getRole().getName())
                 .outletId(user.getOutletId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
                 .displayName(displayName.isEmpty() ? null : displayName)
                 .build();
     }

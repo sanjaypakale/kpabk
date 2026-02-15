@@ -9,6 +9,8 @@ import {
   EditOutletPage,
   OutletProductsPage,
 } from '../features/outlet';
+import { UserListPage, CreateUserPage, UserDetailsPage, EditUserPage } from '../features/user';
+import { ProductsPage } from '../features/product';
 import DashboardPage from '../pages/DashboardPage';
 
 /**
@@ -25,12 +27,18 @@ export function AppRoutes() {
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/products" element={<ProductsPage />} />
           <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
             <Route path="/admin/outlets" element={<OutletListPage />} />
             <Route path="/admin/outlets/new" element={<CreateOutletPage />} />
             <Route path="/admin/outlets/:id" element={<OutletDetailsPage />} />
             <Route path="/admin/outlets/:id/edit" element={<EditOutletPage />} />
             <Route path="/admin/outlets/:id/products" element={<OutletProductsPage />} />
+            <Route path="/admin/users" element={<UserListPage />} />
+            <Route path="/admin/users/new" element={<CreateUserPage />} />
+            <Route path="/admin/users/:id" element={<UserDetailsPage />} />
+            <Route path="/admin/users/:id/edit" element={<EditUserPage />} />
+            <Route path="/admin/products" element={<ProductsPage />} />
           </Route>
         </Route>
       </Route>

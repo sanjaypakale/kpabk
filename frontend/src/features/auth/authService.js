@@ -12,6 +12,22 @@ export const login = async (email, password) => {
 };
 
 /**
+ * Register a new user. Returns created user info; does not log in.
+ * Public registration uses role CUSTOMER.
+ */
+export const register = async (payload) => {
+  const { data } = await axiosInstance.post(`${AUTH_BASE}/register`, {
+    firstName: payload.firstName?.trim() || null,
+    lastName: payload.lastName?.trim() || null,
+    email: payload.email?.trim()?.toLowerCase() || '',
+    password: payload.password,
+    role: payload.role ?? 'CUSTOMER',
+    outletId: payload.outletId ?? null,
+  });
+  return data;
+};
+
+/**
  * Logout is client-side only (JWT is stateless). Clears stored token.
  */
 export const logout = () => {

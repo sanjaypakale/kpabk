@@ -30,12 +30,17 @@ public class AuthService {
         User user = User.builder()
                 .email(request.getEmail().trim().toLowerCase())
                 .passwordHash(hash)
-                .displayName(request.getDisplayName() != null ? request.getDisplayName().trim() : null)
+                .firstName(trimToNull(request.getFirstName()))
+                .lastName(trimToNull(request.getLastName()))
                 .role(role)
                 .outletId(request.getOutletId())
                 .enabled(true)
                 .build();
         return userRepository.save(user);
+    }
+
+    private static String trimToNull(String s) {
+        return s == null || s.isBlank() ? null : s.trim();
     }
 
     public Optional<LoginResponse> login(LoginRequest request) {

@@ -54,7 +54,8 @@ public class UserManagementService {
         User user = User.builder()
                 .email(email)
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
-                .displayName(trimToNull(request.getDisplayName()))
+                .firstName(trimToNull(request.getFirstName()))
+                .lastName(trimToNull(request.getLastName()))
                 .role(role)
                 .outletId(request.getRole() == RoleName.OUTLET ? request.getOutletId() : null)
                 .enabled(true)
@@ -80,6 +81,20 @@ public class UserManagementService {
     }
 
     @Transactional(readOnly = true)
+    public PageResponse<UserResponse> getAllUsers(Pageable pageable) {
+        Page<User> page = userRepository.findAll(pageable);
+        return PageResponse.<UserResponse>builder()
+                .content(page.getContent().stream().map(this::toUserResponse).toList())
+                .page(page.getNumber())
+                .size(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .first(page.isFirst())
+                .last(page.isLast())
+                .build();
+    }
+
+    @Transactional(readOnly = true)
     public PageResponse<UserResponse> getUsersByRole(RoleName roleName, Pageable pageable) {
         Page<User> page = userRepository.findByRole_Name(roleName, pageable);
         return PageResponse.<UserResponse>builder()
@@ -98,8 +113,19 @@ public class UserManagementService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", id));
 
-        if (request.getDisplayName() != null) {
-            user.setDisplayName(request.getDisplayName().isBlank() ? null : request.getDisplayName().trim());
+        if (request.getFirstName() != null) {
+            user.setFirstName(request.getFirstName().isBlank() ? null : request.getFirstName().trim());
+        }
+        if (request.getLastName() != null) {
+            user.setLastName(request.getLastName().isBlank() ? null : request.getLastName().trim());
+        }
+        if (request.getRole() != null) {
+            Role role = roleRepository.findByName(request.getRole())
+                    .orElseThrow(() -> new BusinessRuleException("Unknown role: " + request.getRole()));
+            user.setRole(role);
+            if (request.getRole() != RoleName.OUTLET) {
+                user.setOutletId(null);
+            }
         }
         if (request.getOutletId() != null) {
             if (user.getRole().getName() != RoleName.OUTLET) {
@@ -141,8 +167,11 @@ public class UserManagementService {
     public UserProfileResponse updateMyProfile(String email, UpdateProfileRequest request) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User with email not found: " + email));
-        if (request.getDisplayName() != null) {
-            user.setDisplayName(request.getDisplayName().isBlank() ? null : request.getDisplayName().trim());
+        if (request.getFirstName() != null) {
+            user.setFirstName(request.getFirstName().isBlank() ? null : request.getFirstName().trim());
+        }
+        if (request.getLastName() != null) {
+            user.setLastName(request.getLastName().isBlank() ? null : request.getLastName().trim());
         }
         userRepository.save(user);
         UserProfile profile = userProfileRepository.findByUserId(user.getId()).orElse(null);
@@ -169,6 +198,8 @@ public class UserManagementService {
         return UserProfileResponse.builder()
                 .id(user.getId())
                 .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
                 .displayName(user.getDisplayName())
                 .phone(phone)
                 .role(user.getRole().getName())
@@ -190,6 +221,8 @@ public class UserManagementService {
         return UserResponse.builder()
                 .id(user.getId())
                 .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
                 .displayName(user.getDisplayName())
                 .phone(phone)
                 .role(user.getRole().getName())

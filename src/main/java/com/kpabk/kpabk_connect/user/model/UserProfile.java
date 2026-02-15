@@ -7,7 +7,7 @@ import lombok.*;
 import java.time.Instant;
 
 /**
- * Extended profile for users (auth User has email, displayName, etc.).
+ * Extended profile for users (auth User has email, firstName, lastName, etc.).
  * Links to auth users by user_id. Stores phone and other profile fields.
  * H2 and PostgreSQL compatible.
  */
