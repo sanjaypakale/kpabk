@@ -10,7 +10,9 @@ import com.kpabk.kpabk_connect.order.model.OrderStatus;
 import com.kpabk.kpabk_connect.order.model.PaymentStatus;
 import com.kpabk.kpabk_connect.order.repository.OrderRepository;
 import com.kpabk.kpabk_connect.product.dto.OutletProductResponse;
+import com.kpabk.kpabk_connect.product.dto.ProductResponse;
 import com.kpabk.kpabk_connect.product.service.OutletProductService;
+import com.kpabk.kpabk_connect.product.service.ProductService;
 import com.kpabk.kpabk_connect.user.dto.OutletResponse;
 import com.kpabk.kpabk_connect.user.exception.ResourceNotFoundException;
 import com.kpabk.kpabk_connect.user.service.OutletService;
@@ -37,6 +39,8 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final OutletService outletService;
     private final OutletProductService outletProductService;
+    /** Global product catalog; used when product is not specifically configured for an outlet. */
+    private final ProductService productService;
     private final InventoryDeductionPort inventoryDeductionPort;
 
     @Override
@@ -63,31 +67,36 @@ public class OrderServiceImpl implements OrderService {
         Map<UUID, Integer> productQuantities = new HashMap<>();
 
         for (OrderItemRequest req : itemRequests) {
-            OutletProductResponse op;
+            // New rule: any listed product can be ordered by any outlet.
+            // We rely on the global product catalog and ignore outlet-specific mappings for availability.
+            ProductResponse product;
             try {
-                op = outletProductService.getOutletProduct(outletId, req.getProductId());
-            } catch (Exception e) {
-                throw new OrderValidationException("Product not available for this outlet: " + req.getProductId());
-            }
-            if (Boolean.FALSE.equals(op.getIsAvailable())) {
-                throw new OrderValidationException("Product is not available: " + op.getProductName());
-            }
-            int minQty = op.getMinimumOrderQuantity() != null && op.getMinimumOrderQuantity() >= 1
-                    ? op.getMinimumOrderQuantity() : 1;
-            if (req.getQuantity() < minQty) {
-                throw new OrderValidationException(
-                        "Quantity for " + op.getProductName() + " must be at least " + minQty);
+                product = productService.getById(req.getProductId());
+            } catch (com.kpabk.kpabk_connect.product.exception.ResourceNotFoundException e) {
+                throw new OrderValidationException("Product not found: " + req.getProductId());
             }
 
-            BigDecimal unitPrice = op.getOutletPrice() != null ? op.getOutletPrice() : op.getBasePrice();
-            BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(req.getQuantity())).setScale(2, RoundingMode.HALF_UP);
+            if (Boolean.FALSE.equals(product.getIsActive())) {
+                throw new OrderValidationException("Product is not active: " + product.getName());
+            }
+
+            int minQty = 1;
+            if (req.getQuantity() < minQty) {
+                throw new OrderValidationException(
+                        "Quantity for " + product.getName() + " must be at least " + minQty);
+            }
+
+            BigDecimal unitPrice = product.getBasePrice();
+            BigDecimal subtotal = unitPrice
+                    .multiply(BigDecimal.valueOf(req.getQuantity()))
+                    .setScale(2, RoundingMode.HALF_UP);
             totalAmount = totalAmount.add(subtotal);
 
             productQuantities.put(req.getProductId(), req.getQuantity());
 
             OrderItem item = OrderItem.builder()
                     .productId(req.getProductId())
-                    .productName(op.getProductName())
+                    .productName(product.getName())
                     .quantity(req.getQuantity())
                     .priceAtOrderTime(unitPrice)
                     .subtotal(subtotal)

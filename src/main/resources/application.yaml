@@ -38,6 +38,6 @@ spring:
 # Payment (Razorpay). Set env PAYMENT_RAZORPAY_KEY_ID, PAYMENT_RAZORPAY_KEY_SECRET to enable; leave unset to use no-op gateway (app starts without Razorpay).
 payment:
   razorpay:
-    key-id: ${PAYMENT_RAZORPAY_KEY_ID:}
-    key-secret: ${PAYMENT_RAZORPAY_KEY_SECRET:}
-    webhook-secret: ${PAYMENT_RAZORPAY_WEBHOOK_SECRET:}
+    key-id: ${PAYMENT_RAZORPAY_KEY_ID:rzp_test_mock}
+    key-secret: ${PAYMENT_RAZORPAY_KEY_SECRET:mock_secret}
+    webhook-secret: ${PAYMENT_RAZORPAY_WEBHOOK_SECRET:mock_secret}

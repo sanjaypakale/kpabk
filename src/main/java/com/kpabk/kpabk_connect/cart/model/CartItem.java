@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
-import java.util.UUID;
+
 
 /**
  * Cart item entity. Unique per user + product; adding the same product again increases quantity.

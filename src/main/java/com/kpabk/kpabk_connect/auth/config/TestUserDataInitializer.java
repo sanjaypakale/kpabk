@@ -27,11 +27,11 @@ public class TestUserDataInitializer {
     @Order(3) // after RoleDataInitializer (1) and OutletDataInitializer (2)
     public ApplicationRunner initTestUsers() {
         return args -> {
-            String testPassword = passwordEncoder.encode("password123");
+            String testPassword = passwordEncoder.encode("password");
 
-            createIfMissing("admin@test.com", testPassword, "Admin", "User", RoleName.ADMIN, null);
+            createIfMissing("admin@gmail.com", testPassword, "Admin", "User", RoleName.ADMIN, null);
             createIfMissing("outlet@test.com", testPassword, "Outlet", "Manager", RoleName.OUTLET, 1L);
-            createIfMissing("customer@test.com", testPassword, "Test", "Customer", RoleName.CUSTOMER, null);
+            createIfMissing("customer@gmail.com", testPassword, "Test", "Customer", RoleName.CUSTOMER, 1L);
         };
     }
 

@@ -2,7 +2,6 @@ package com.kpabk.kpabk_connect.product.service;
 
 import com.kpabk.kpabk_connect.product.dto.OutletProductRequest;
 import com.kpabk.kpabk_connect.product.dto.OutletProductResponse;
-import com.kpabk.kpabk_connect.product.exception.BusinessException;
 import com.kpabk.kpabk_connect.product.exception.ResourceNotFoundException;
 import com.kpabk.kpabk_connect.product.model.OutletProduct;
 import com.kpabk.kpabk_connect.product.model.Product;
